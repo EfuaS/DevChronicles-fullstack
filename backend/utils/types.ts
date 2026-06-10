@@ -1,10 +1,10 @@
 export type UserDTO ={
-    displayName : string,
+    username : string,
     password: string,
     email: string,
 }
 export type RegisterUserDTO ={
-    displayName : string,
+    username : string,
     password: string,
     email: string,
 }
