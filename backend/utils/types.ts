@@ -15,7 +15,9 @@ export type LoginUserDTO ={
 
 export type PostDTO = {
 userId: string,
-created_At: string,
+createdAt: string,
 title: string,
-content: string
+content: string,
+likeCount: number
 }
+
