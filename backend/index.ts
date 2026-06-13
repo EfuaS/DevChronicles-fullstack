@@ -1,7 +1,12 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import zod from "zod";
-import { LoginUserDTO, PostDTO, RegisterUserDTO } from "./utils/types.js";
+import {
+  CommentDTO,
+  LoginUserDTO,
+  PostDTO,
+  RegisterUserDTO,
+} from "./utils/types.js";
 import { pool } from "./utils/db.js";
 
 const api = express();
@@ -149,10 +154,54 @@ api.delete("/api/posts/:id", async (req, res) => {
   await pool
     .query(`DELETE FROM posts WHERE id = ${postId};`)
     .catch((error) =>
-      res.status(400).send(new Error("Something went wrong." + error)),
+      res.status(500).send(new Error("Something went wrong." + error)),
     )
     .then(() => res.send("Post deleted successfully."));
 });
+
+// add a comment
+api.post("/api/comments", async (req, res) => {
+  const comment: CommentDTO = req.body;
+
+  const commentSchema = zod.object({
+    message: zod.string().max(250, "Max number of characters is 250."),
+    userId: zod.uuid(),
+    postId: zod.uuid(),
+  });
+
+  const { success, error } = zod.safeParse(commentSchema, comment);
+
+  if (!success) {
+    return res.status(400).send(" Bad Request" + error);
+  }
+
+  await pool
+    .query(
+      `INSERT INTO comments (created_at, message, post_id,user_id) VALUES (${new Date().toISOString()}, ${comment.message}, ${comment.postId}, ${comment.userId});`,
+    )
+    .then(() => res.status(200).send("Comment created!"))
+    .catch(()=> res.status(500).send("Oops something went wrong"))
+});
+
+//like a post
+api.patch("/api/posts/:id", async (req,res)=>{
+    const postId = req.params.id;
+
+    const { success } = zod.safeParse(zod.uuid(), postId);
+
+    if (!success) {
+      return res.status(404).send("Not found");
+    }
+
+      await pool
+        .query(`UPDATE posts SET like_count = like_count + 1 WHERE id = ${postId};`)
+        .catch((error) =>
+          res.status(500).send(new Error("Something went wrong." + error)),
+        )
+        .then(() => res.send("Post liked successfully."));
+
+
+})
 
 api.listen(port, () => {
   console.log("Dev Chronicles API listening on port on 7074!");

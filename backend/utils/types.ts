@@ -21,3 +21,8 @@ content: string,
 likeCount: number
 }
 
+export type CommentDTO={
+    message:string,
+    postId: string,
+    userId: string,
+}
