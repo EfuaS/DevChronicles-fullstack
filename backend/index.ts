@@ -8,12 +8,53 @@ import {
   RegisterUserDTO,
 } from "./utils/types.js";
 import { pool } from "./utils/db.js";
+import swaggerJSDoc, {Options} from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
 
 const api = express();
-// api.use(express.json()) ;
 const port = 7074;
 
+const swaggerConfig: Options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "DevChronicles API",
+      version: "1.0.0",
+      description: "API Documentation for the dev chronicles API",
+    },
+    servers: [
+      {
+        url: "http://localhost:7074",
+        description: "Development server",
+      },
+    ],
+  },
+  // / relative paths to files that contain endpoints like this one
+  apis: [ "./index.ts"],
+};
+const swaggerSpec = swaggerJSDoc(swaggerConfig);
+
+api.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // register users
+/**
+ * @swagger
+ * /api/users:
+ *   post:
+ *    summary: Register new users to DevChronicles
+ *    description: Creates a new user record.
+ *    responses:
+ *      200:
+ *      description: User {username} created successfully.
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              message:
+ *                type: string
+ *                example: "User johndoe created successfully."
+ */
 api.post("/api/users", async (req, res) => {
   const regDetails: RegisterUserDTO = req.body;
 
@@ -206,3 +247,5 @@ api.patch("/api/posts/:id", async (req,res)=>{
 api.listen(port, () => {
   console.log("Dev Chronicles API listening on port on 7074!");
 });
+
+
